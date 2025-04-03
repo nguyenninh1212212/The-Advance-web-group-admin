@@ -64,7 +64,7 @@ const App: React.FC = () => {
   return (
     <Router>
       <QueryClientProvider client={queryClient}>
-        <div className="App bg-gray-800 text-white">
+        <div className="App bg-white text-black">
           <Routes>
             {renderRoutes(publicRoutes, false)}{" "}
             {renderRoutes(privateRoutes, true)}
