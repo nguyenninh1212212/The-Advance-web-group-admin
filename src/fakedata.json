@@ -26,7 +26,7 @@
       {
         "id": 2,
         "title": "Tìm hiểu về API",
-        "content": "API là viết tắt của Application Programming Interface...",
+        "content": "API là viết tắt của Application Programming Interface adsadasda adadawdasfa asdasdaw đâ sdfas fawf à asfasdasfdasfas adsdf ádas",
         "author_id": 2,
         "created_at": "2023-03-12"
       }
@@ -45,6 +45,20 @@
         "author": "Pham Minh D",
         "content": "Thông tin rất hữu ích!",
         "created_at": "2023-03-16"
+      }
+    ],
+    "authors": [
+      {
+        "id": 1,
+        "name": "Le Hoang C",
+        "bio": "Le Hoang C là một lập trình viên chuyên về React.",
+        "avatar": "https://example.com/avatar1.jpg"
+      },
+      {
+        "id": 2,
+        "name": "Pham Minh D",
+        "bio": "Pham Minh D là một biên tập viên nội dung.",
+        "avatar": "https://example.com/avatar2.jpg"
       }
     ]
   }
