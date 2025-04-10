@@ -60,6 +60,11 @@
         "bio": "Pham Minh D là một biên tập viên nội dung.",
         "avatar": "https://example.com/avatar2.jpg"
       }
+    ],
+    "sales": [
+      { "date": "2025-04-01", "users": 10, "stories": 5, "transactions": 3 },
+      { "date": "2025-04-02", "users": 15, "stories": 8, "transactions": 6 },
+      { "date": "2025-04-03", "users": 20, "stories": 12, "transactions": 9 }
     ]
   }
   
