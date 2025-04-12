@@ -1,32 +1,35 @@
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, Typography, Button, ButtonGroup } from "@mui/material";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import fakedata from "../../fakedata.json"; // Import dữ liệu từ file local
 
 const Dashboard = () => {
     const [data, setData] = useState<{ date: string; users: number; stories: number; transactions: number }[]>([]);
-    const [filteredData, setFilteredData] = useState<any[]>([]); // Không khởi tạo với data
+    const [filteredData, setFilteredData] = useState<any[]>([]);
     const [filter, setFilter] = useState("month");
 
-    // Hàm lọc dữ liệu
-    const filterData = (type: string) => {
-        const groupedData = groupBy(type);
-        setFilteredData(groupedData.map(item => ({ ...item, date: item.time })));
-        setFilter(type);
+    // Hàm gọi API để lấy dữ liệu
+    const fetchData = async () => {
+        try {
+            const response = await fetch("http://localhost:8080/admin/sales");
+            const result = await response.json();
+            if (result && Array.isArray(result.data)) {
+                const reportData = result.data.map((item: any) => ({
+                    date: item.date,
+                    users: item.users,
+                    stories: item.stories,
+                    transactions: item.transactions,
+                }));
+                setData(reportData);
+            } else {
+                console.error("Dữ liệu 'sales' không tồn tại hoặc không đúng định dạng.");
+            }
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        }
     };
 
     useEffect(() => {
-        if (fakedata.sales && Array.isArray(fakedata.sales)) {
-            const reportData = fakedata.sales.map((item: any) => ({
-                date: item.date,
-                users: item.users,
-                stories: item.stories,
-                transactions: item.transactions,
-            }));
-            setData(reportData);
-        } else {
-            console.error("Dữ liệu 'sales' không tồn tại hoặc không đúng định dạng.");
-        }
+        fetchData(); // Gọi API khi component được mount
     }, []);
 
     useEffect(() => {
@@ -35,13 +38,17 @@ const Dashboard = () => {
         }
     }, [data]);
 
-    // Hàm tạo dữ liệu mặc định (hiển thị giá trị 0 nếu không có dữ liệu)
+    const filterData = (type: string) => {
+        const groupedData = groupBy(type);
+        setFilteredData(groupedData.map((item) => ({ ...item, date: item.time })));
+        setFilter(type);
+    };
+
     const generateDefaultData = (type: string) => {
         const now = new Date();
         const defaultData = [];
 
         if (type === "month") {
-            // Tạo 12 tháng mặc định
             for (let i = 0; i < 12; i++) {
                 defaultData.push({
                     time: `Tháng ${i + 1}`,
@@ -51,7 +58,6 @@ const Dashboard = () => {
                 });
             }
         } else if (type === "quarter") {
-            // Tạo 4 quý mặc định
             for (let i = 1; i <= 4; i++) {
                 defaultData.push({
                     time: `Quý ${i}`,
@@ -61,7 +67,6 @@ const Dashboard = () => {
                 });
             }
         } else if (type === "year") {
-            // Tạo dữ liệu cho từng năm (ví dụ: 5 năm gần nhất)
             const startYear = now.getFullYear() - 4;
             for (let i = startYear; i <= now.getFullYear(); i++) {
                 defaultData.push({
@@ -76,9 +81,8 @@ const Dashboard = () => {
         return defaultData;
     };
 
-    // Hàm nhóm và điền dữ liệu mặc định
     const groupBy = (type: string) => {
-        const groupedData = generateDefaultData(type); // Tạo dữ liệu mặc định
+        const groupedData = generateDefaultData(type);
 
         data.forEach((item) => {
             const itemDate = new Date(item.date);
@@ -93,7 +97,6 @@ const Dashboard = () => {
                 key = `${itemDate.getFullYear()}`;
             }
 
-            // Tìm dữ liệu mặc định tương ứng để cộng dồn giá trị
             const existingGroup = groupedData.find((g) => g.time === key);
             if (existingGroup) {
                 existingGroup.users += item.users;
@@ -111,7 +114,6 @@ const Dashboard = () => {
                 <Typography variant="h5" gutterBottom>
                     Báo cáo doanh số
                 </Typography>
-                {/* Nút lọc */}
                 <ButtonGroup variant="contained" color="primary" style={{ marginBottom: "16px" }}>
                     <Button onClick={() => filterData("month")} disabled={filter === "month"}>
                         Theo tháng
@@ -123,46 +125,16 @@ const Dashboard = () => {
                         Theo năm
                     </Button>
                 </ButtonGroup>
-                {/* Biểu đồ cho người dùng */}
-                <Typography variant="h6" gutterBottom>
-                    Người dùng mới
-                </Typography>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={400}>
                     <LineChart data={filteredData}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="time" /> {/* Trục X hiển thị tháng, quý hoặc năm */}
+                        <XAxis dataKey="time" />
                         <YAxis />
                         <Tooltip />
                         <Legend />
                         <Line type="monotone" dataKey="users" stroke="#8884d8" name="Người dùng" />
-                    </LineChart>
-                </ResponsiveContainer>
-                {/* Biểu đồ cho giao dịch */}
-                <Typography variant="h6" gutterBottom>
-                    Giao dịch trong hệ thống
-                </Typography>
-                <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={filteredData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="time" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Line type="monotone" dataKey="transactions" stroke="#82ca9d" name="Giao dịch" />
-                    </LineChart>
-                </ResponsiveContainer>
-                {/* Biểu đồ cho số lượng truyện */}
-                <Typography variant="h6" gutterBottom>
-                    Số lượng truyện được đăng tải
-                </Typography>
-                <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={filteredData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="time" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Line type="monotone" dataKey="stories" stroke="#ffc658" name="Số lượng truyện" />
+                        <Line type="monotone" dataKey="stories" stroke="#82ca9d" name="Truyện được thêm" />
+                        <Line type="monotone" dataKey="transactions" stroke="#ffc658" name="Giao dịch" />
                     </LineChart>
                 </ResponsiveContainer>
             </CardContent>

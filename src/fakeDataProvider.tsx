@@ -1,6 +1,6 @@
-import fakeDataProvider from 'ra-data-fakerest';
-import jsonData from './fakedata.json';
+import simpleRestProvider from 'ra-data-simple-rest';
 
-const dataProvider = fakeDataProvider(jsonData);
+// Sử dụng API thật
+const dataProvider = simpleRestProvider('http://localhost:8080/admin');
 
 export default dataProvider;

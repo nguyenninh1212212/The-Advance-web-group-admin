@@ -1,117 +1,115 @@
-import { fetchUtils } from 'ra-core';
-import { DataProvider, GetListParams, GetOneParams, UpdateParams } from 'ra-core'; // Import các kiểu cần thiết
+import { fetchUtils } from "ra-core";
+import { DataProvider, GetListParams, GetOneParams, UpdateParams } from "ra-core";
 
-// URL API chính của bạn
-const apiUrl = './fakedata.json'; // Thay bằng URL API của bạn
-const httpClient = fetchUtils.fetchJson;
+const apiUrl = "http://localhost:8080/admin";
+const httpClient = (url: string, options: any = {}) => {
+    const token = localStorage.getItem("accessToken");
+    if (!options.headers) {
+        options.headers = new Headers({ Accept: "application/json" });
+    }
+    if (token) {
+        options.headers.set("Authorization", `Bearer ${token}`);
+    }
+    return fetchUtils.fetchJson(url, options);
+};
 
 const dataProvider: DataProvider = {
-    // Lấy danh sách dữ liệu (GET /resource)
     getList: (resource: string, params: GetListParams) => {
         const { page, perPage } = params.pagination ?? { page: 1, perPage: 10 };
-        const { field, order } = params.sort ?? { field: 'id', order: 'ASC' };
         const query = {
-            _sort: field,
-            _order: order,
-            _start: (page - 1) * perPage,
-            _end: page * perPage,
-            ...params.filter,
+            page: page - 1,
+            limit: perPage,
         };
         const url = `${apiUrl}/${resource}?${fetchUtils.queryParameters(query)}`;
-        return httpClient(url).then(({ headers, json }) => {
-            if (!headers.has('x-total-count')) {
-                throw new Error('The X-Total-Count header is missing in the HTTP Response.');
+        return httpClient(url).then(({ json }) => {
+            if (json.code === 1000 && json.result) {
+                return {
+                    data: json.result.data.map((item: any, index: number) => ({
+                        id: index + 1,
+                        ...item,
+                    })),
+                    total: json.result.total,
+                };
+            } else {
+                throw new Error("API trả về dữ liệu không hợp lệ.");
             }
-            return {
-                data: json,
-                total: parseInt(headers.get('x-total-count') || '0', 10),
-            };
         });
     },
 
-    // Lấy dữ liệu của 1 bản ghi (GET /resource/:id)
+    getMany: (resource: string, params: any) => {
+        const query = {
+            ids: params.ids,
+        };
+        const url = `${apiUrl}/${resource}?${fetchUtils.queryParameters(query)}`;
+        return httpClient(url).then(({ json }) => ({
+            data: json,
+        }));
+    },
+
+    getManyReference: (resource: string, params: any) => {
+        const { page, perPage } = params.pagination ?? { page: 1, perPage: 10 };
+        const query = {
+            target: params.target,
+            id: params.id,
+            page: page - 1,
+            limit: perPage,
+        };
+        const url = `${apiUrl}/${resource}?${fetchUtils.queryParameters(query)}`;
+        return httpClient(url).then(({ json }) => ({
+            data: json.data,
+            total: json.total,
+        }));
+    },
+
+    updateMany: (resource: string, params: any) => {
+        const url = `${apiUrl}/${resource}`;
+        return httpClient(url, {
+            method: "PUT",
+            body: JSON.stringify(params.data),
+        }).then(({ json }) => ({
+            data: json,
+        }));
+    },
+
+    deleteMany: (resource: string, params: any) => {
+        const query = {
+            ids: params.ids,
+        };
+        const url = `${apiUrl}/${resource}?${fetchUtils.queryParameters(query)}`;
+        return httpClient(url, {
+            method: "DELETE",
+        }).then(({ json }) => ({
+            data: json,
+        }));
+    },
+
     getOne: (resource: string, params: GetOneParams) =>
         httpClient(`${apiUrl}/${resource}/${params.id}`).then(({ json }) => ({
             data: json,
         })),
 
-    // Lấy dữ liệu của nhiều bản ghi (GET /resource?id[]=1&id[]=2...)
-    getMany: (resource, params) => {
-        const query = { id: params.ids };
-        const url = `${apiUrl}/${resource}?${fetchUtils.queryParameters(query)}`;
-        return httpClient(url).then(({ json }) => ({ data: json }));
-    },
-
-    // Lấy dữ liệu liên quan (GET /resource?target=id)
-    getManyReference: (resource, params) => {
-        const { page, perPage } = params.pagination ?? { page: 1, perPage: 10 };
-        const { field, order } = params.sort ?? { field: 'id', order: 'ASC' };
-        const query = {
-            _sort: field,
-            _order: order,
-            _start: (page - 1) * perPage,
-            _end: page * perPage,
-            ...params.filter,
-            [params.target]: params.id,
-        };
-        const url = `${apiUrl}/${resource}?${fetchUtils.queryParameters(query)}`;
-        return httpClient(url).then(({ headers, json }) => {
-            if (!headers.has('x-total-count')) {
-                throw new Error('The X-Total-Count header is missing in the HTTP Response.');
-            }
-            return {
-                data: json,
-                total: parseInt(headers.get('x-total-count') || '0', 10),
-            };
-        });
-    },
-
-    // Tạo dữ liệu mới (POST /resource)
-    create: (resource, params) => {
-        const url = `${apiUrl}/${resource}`;
-        const options = {
-            method: 'POST',
+    create: (resource: string, params: any) =>
+        httpClient(`${apiUrl}/${resource}`, {
+            method: "POST",
             body: JSON.stringify(params.data),
-        };
+        }).then(({ json }) => ({
+            data: json,
+        })),
 
-        return httpClient(url, options).then(({ json }) => {
-            return {
-                data: { ...json },
-            };
-        });
-    },
-
-    // Cập nhật dữ liệu (PUT /resource/:id)
     update: (resource: string, params: UpdateParams) =>
         httpClient(`${apiUrl}/${resource}/${params.id}`, {
-            method: 'PUT',
+            method: "PUT",
             body: JSON.stringify(params.data),
-        }).then(({ json }) => ({ data: json })),
+        }).then(({ json }) => ({
+            data: json,
+        })),
 
-    // Cập nhật nhiều bản ghi (PUT /resource)
-    updateMany: (resource, params) => {
-        const query = { id: params.ids };
-        const url = `${apiUrl}/${resource}?${fetchUtils.queryParameters(query)}`;
-        return httpClient(url, {
-            method: 'PUT',
-            body: JSON.stringify(params.data),
-        }).then(({ json }) => ({ data: json }));
-    },
-
-    // Xóa dữ liệu (DELETE /resource/:id)
-    delete: (resource, params) =>
+    delete: (resource: string, params: any) =>
         httpClient(`${apiUrl}/${resource}/${params.id}`, {
-            method: 'DELETE',
-        }).then(({ json }) => ({ data: json })),
-
-    // Xóa nhiều bản ghi (DELETE /resource?id[]=1&id[]=2...)
-    deleteMany: (resource, params) => {
-        const query = { id: params.ids };
-        const url = `${apiUrl}/${resource}?${fetchUtils.queryParameters(query)}`;
-        return httpClient(url, {
-            method: 'DELETE',
-        }).then(({ json }) => ({ data: json }));
-    },
+            method: "DELETE",
+        }).then(({ json }) => ({
+            data: json,
+        })),
 };
 
 export default dataProvider;
