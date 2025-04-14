@@ -9,6 +9,7 @@ const Login = () => {
 
     const onSubmit = async (data: { email: string; password: string }) => {
         try {
+            
             const response = await fetch("http://localhost:8080/auth/token", {
                 method: "POST",
                 headers: {
@@ -32,11 +33,13 @@ const Login = () => {
                 } else {
                     alert("Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản và mật khẩu.");
                 }
+                console.log("Đang gửi yêu cầu đăng nhập với dữ liệu:", result.result.accessToken);
             } else {
                 const errorMessage = await response.text();
                 console.error("Đăng nhập thất bại:", errorMessage);
                 alert("Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản và mật khẩu.");
             }
+             // Kiểm tra dữ liệu gửi đi
         } catch (error) {
             console.error("Lỗi khi gọi API:", error);
             alert("Đã xảy ra lỗi. Vui lòng thử lại sau.");
