@@ -10,18 +10,31 @@ const Dashboard = () => {
     // Hàm gọi API để lấy dữ liệu
     const fetchData = async () => {
         try {
-            const response = await fetch("http://localhost:8080/admin/sales");
-            const result = await response.json();
-            if (result && Array.isArray(result.data)) {
-                const reportData = result.data.map((item: any) => ({
-                    date: item.date,
-                    users: item.users,
-                    stories: item.stories,
-                    transactions: item.transactions,
-                }));
-                setData(reportData);
+            const token = localStorage.getItem("accessToken");
+            const response = await fetch("http://localhost:8080/admin/sales", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`, // Thêm token vào header
+                },
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log("Dữ liệu từ API:", result);
+                if (result && Array.isArray(result.data)) {
+                    const reportData = result.data.map((item: any) => ({
+                        date: item.date,
+                        users: item.users,
+                        stories: item.stories,
+                        transactions: item.transactions,
+                    }));
+                    setData(reportData);
+                } else {
+                    console.error("Dữ liệu 'sales' không tồn tại hoặc không đúng định dạng.");
+                }
             } else {
-                console.error("Dữ liệu 'sales' không tồn tại hoặc không đúng định dạng.");
+                console.error("Lỗi khi gọi API:", response.statusText);
             }
         } catch (error) {
             console.error("Lỗi khi gọi API:", error);
