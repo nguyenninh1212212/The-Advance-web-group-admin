@@ -2,47 +2,32 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, TextField, Button, Typography } from "@mui/material";
+import { login } from "../../api/login";
+import { toast } from "react-toastify";
 
-const Login = () => {
+export const Login = () => {
     const { register, handleSubmit, formState: { errors } } = useForm<{ email: string; password: string }>();
     const navigate = useNavigate();
 
     const onSubmit = async (data: { email: string; password: string }) => {
         try {
-            
-            const response = await fetch("http://localhost:8080/auth/token", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data), // Gửi đúng cấu trúc { email, password }
-            });
+            const response = await login(data);
+            console.log("Response:", response); // In ra phản hồi từ API để kiểm tra
+            // Kiểm tra phản hồi từ API
+            if (response?.result?.accessToken) {
+                console.log("Token:", response.result.accessToken); // In ra token để kiểm tra
+                // Lưu token và role vào localStorage
+                localStorage.setItem("token", response.result.accessToken);
+                localStorage.setItem("role", JSON.stringify(response.result.role));
 
-            if (response.ok) {
-                const result = await response.json();
-                if (result.code === 1000 && result.result.accessToken) {
-                    // Lưu accessToken vào localStorage
-                    localStorage.setItem("accessToken", result.result.accessToken);
-
-                    // Kiểm tra vai trò (role) của người dùng
-                    if (result.result.role.includes("ADMIN")) {
-                        navigate("/"); // Điều hướng về trang chính nếu là admin
-                    } else {
-                        alert("Bạn không có quyền truy cập.");
-                    }
-                } else {
-                    alert("Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản và mật khẩu.");
-                }
-                console.log("Đang gửi yêu cầu đăng nhập với dữ liệu:", result.result.accessToken);
-            } else {
-                const errorMessage = await response.text();
-                console.error("Đăng nhập thất bại:", errorMessage);
-                alert("Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản và mật khẩu.");
+                // Chuyển hướng đến trang dashboard
+                navigate("/");
             }
-             // Kiểm tra dữ liệu gửi đi
-        } catch (error) {
-            console.error("Lỗi khi gọi API:", error);
-            alert("Đã xảy ra lỗi. Vui lòng thử lại sau.");
+            else {
+                toast.error("Đăng nhập không thành công. Vui lòng kiểm tra lại thông tin đăng nhập.");
+            }
+        } catch (error: any) {
+            toast.error(error.response.data.message || "Đăng nhập không thành công. Vui lòng kiểm tra lại thông tin đăng nhập.");
         }
     };
 
@@ -84,5 +69,3 @@ const Login = () => {
         </Card>
     );
 };
-
-export default Login;

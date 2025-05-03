@@ -7,58 +7,50 @@ import UserList from "./pages/users/user";
 import UserShow from "./pages/users/usershow";
 import PostList from "./pages/posts/post";
 import Dashboard from "./pages/dashboard/Dashboard";
-import Login from "./pages/auth/Login";
-import {jwtDecode} from "jwt-decode";
-
-const isTokenValid = () => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) return false;
-
-    try {
-        const decoded: { exp: number } = jwtDecode(token);
-        const currentTime = Math.floor(Date.now() / 1000);
-        if (decoded.exp <= currentTime) {
-            localStorage.removeItem("accessToken"); // Xóa token nếu hết hạn
-            return false;
-        }
-        return true;
-    } catch (error) {
-        console.error("Lỗi khi giải mã token:", error);
-        return false;
-    }
-};
-
+import { Login } from "./pages/auth/Login";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export const App = () => {
-    const isAuthenticated = isTokenValid();
 
-    return (
-        <BrowserRouter>
-            <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route
-                    path="/*"
-                    element={
-                        isAuthenticated ? (
-                            <Admin
-                                layout={Layout}
-                                dataProvider={dataProvider}
-                                dashboard={Dashboard}
-                            >
-                                <Resource name="user" list={UserList} icon={People} show={UserShow} />
-                                <Resource name="posts" list={PostList} icon={PostAdd} />
-                                <Resource name="comments" list={PostList} icon={Comment} />
-                            </Admin>
-                        ) : (
-                            <Navigate to="/login" />
-                        )
-                    }
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/*"
+          element={(
+              <Admin
+                layout={Layout}
+                dataProvider={dataProvider}
+                dashboard={Dashboard}
+              >
+                <Resource
+                  name="user"
+                  list={UserList}
+                  icon={People}
+                  show={UserShow}
                 />
-            </Routes>
-        </BrowserRouter>
-    );
+                <Resource name="posts" list={PostList} icon={PostAdd} />
+                <Resource name="comments" list={PostList} icon={Comment} />
+              </Admin>
+            )
+          }
+        />
+      </Routes>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={4000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+      <ToastContainer />
+    </BrowserRouter>
+  );
 };
-
-
-
-
