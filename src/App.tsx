@@ -36,7 +36,7 @@ export const App = () => {
                   name="category" 
                   list={CategoriesList} 
                   icon={Category} 
-                  show={ShowGuesser}
+                  //show={ShowGuesser}
                 />
                 <Resource name="comments" list={PostList} icon={Comment} />
               </Admin>
