@@ -1,15 +1,16 @@
-import { Admin, Resource } from "react-admin";
+import { Admin, Resource, ShowGuesser } from "react-admin";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Comment, People, PostAdd } from "@mui/icons-material";
+import { Category, Comment, People, PostAdd } from "@mui/icons-material";
 import Layout from "./Layout";
 import dataProvider from "./dataProvider";
 import UserList from "./pages/users/user";
 import UserShow from "./pages/users/usershow";
-import PostList from "./pages/posts/post";
+import PostList from "./pages/category/category";
 import Dashboard from "./pages/dashboard/Dashboard";
 import { Login } from "./pages/auth/Login";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import CategoriesList from "./pages/category/category";
 
 export const App = () => {
 
@@ -31,7 +32,12 @@ export const App = () => {
                   icon={People}
                   show={UserShow}
                 />
-                <Resource name="posts" list={PostList} icon={PostAdd} />
+                <Resource 
+                  name="category" 
+                  list={CategoriesList} 
+                  icon={Category} 
+                  show={ShowGuesser}
+                />
                 <Resource name="comments" list={PostList} icon={Comment} />
               </Admin>
             )

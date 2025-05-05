@@ -2,7 +2,7 @@ import { List, SimpleList, Datagrid, TextField, ReferenceField, DateField, Funct
 
 
 
-const PostList = () => (
+const CategoriesList = () => (
     <List>
         <Datagrid
             sx={{
@@ -16,18 +16,16 @@ const PostList = () => (
         }}
         >
             <TextField source="id" />
-            <TextField source="title" label = "Post title" />
-            <FunctionField 
-                label="content" 
-                render={(record) => record.content ? `${record.content.substring(0, 50)}...` : 'No content available'} 
-            />
-            <ReferenceField source="author_id" reference="authors" />
             <DateField source="created_at" />
+            <DateField source="delete_at" />
+            <DateField source="updated_at" />
+            <TextField source="Name" label = "Category name" />
+            
         </Datagrid>
     </List>
 );
 
-export default PostList;
+export default CategoriesList;
 
 /*
 
