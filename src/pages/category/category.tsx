@@ -7,13 +7,14 @@ import {
     Button,
     useRecordContext,
 } from 'react-admin';
-import { Dialog, DialogTitle, DialogContent } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, Pagination } from '@mui/material';
 import { useState } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import CategoryFormEdit from './categoryedit'; // component form sửa
 import CategoryForm from './categorycreate';
 import { api } from '../../api';
 import DeletePopupButton from './categorydelete';
+import CustomPagination from '../../Component/CustomPagination';
 
 const ListActions = ({ onOpen }: { onOpen: () => void }) => (
     <TopToolbar>
@@ -81,7 +82,7 @@ const CategoriesList = (props: any) => {
 
     return (
         <>
-            <List {...props} actions={<ListActions onOpen={handleOpenCreate} />}>
+            <List {...props} pagination={<CustomPagination />} actions={<ListActions onOpen={handleOpenCreate} />}>
                 <Datagrid
                     sx={{
                         '& .RaDatagrid-headerCell': {

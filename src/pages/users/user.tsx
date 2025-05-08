@@ -6,6 +6,7 @@ import {
     useNotify,
     useRefresh,
     useRecordContext,
+    BooleanField,
 } from 'react-admin';
 import {
     Select,
@@ -18,38 +19,33 @@ import {
     Button,
 } from '@mui/material';
 import { useState } from 'react';
-import { api } from '../../api'; // chỉnh path nếu khác
+import { api } from '../../api';
 
-const StatusDropdown = () => {
+// Component dropdown trạng thái active
+const ActiveStatusDropdown = () => {
     const record = useRecordContext();
-    const [status, setStatus] = useState(() => {
-        if (!record.active) return 'banned';
-        return record.request ? 'priority' : 'active';
-    });
-
+    const [value, setValue] = useState(record?.active ? 'active' : 'banned');
     const [openConfirm, setOpenConfirm] = useState(false);
-    const [selected, setSelected] = useState(status);
+    const [pendingValue, setPendingValue] = useState(value);
     const notify = useNotify();
     const refresh = useRefresh();
 
-    const handleChange = (event: any) => {
-        setSelected(event.target.value);
+    const handleChange = (e: any) => {
+        setPendingValue(e.target.value);
         setOpenConfirm(true);
     };
 
     const handleConfirm = async () => {
+        if (!record) return;
         try {
-            if (selected === 'banned') {
-                await api.post(`/admin/user/ban?id=${record.id}`);
+            if (pendingValue === 'banned') {
+                await api.put(`/admin/user/${record.id}/deactivate`);
                 notify('Đã khóa tài khoản');
-            } else if (selected === 'priority') {
-                await api.post(`/admin/user/prioritize?id=${record.id}`);
-                notify('Đã đánh dấu ưu tiên');
             } else {
-                await api.post(`/admin/user/activate?id=${record.id}`);
-                notify('Đã chuyển về hoạt động bình thường');
+                await api.put(`/admin/user/${record.id}/activate`);
+                notify('Đã kích hoạt tài khoản');
             }
-            setStatus(selected);
+            setValue(pendingValue);
             refresh();
         } catch (err: any) {
             notify(`Lỗi: ${err.message}`, { type: 'error' });
@@ -60,21 +56,19 @@ const StatusDropdown = () => {
 
     return (
         <>
-            <FormControl fullWidth>
-                <Select value={status} onChange={handleChange} size="small">
-                    <MenuItem value="active">Hoạt động</MenuItem>
-                    <MenuItem value="priority">Ưu tiên</MenuItem>
-                    <MenuItem value="banned">Đã bị khóa</MenuItem>
+            <FormControl fullWidth size="small">
+                <Select value={value} onChange={handleChange}>
+                    <MenuItem value="active">Active</MenuItem>
+                    <MenuItem value="banned">Banned</MenuItem>
                 </Select>
             </FormControl>
-
             <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
-                <DialogTitle>Xác nhận thay đổi trạng thái</DialogTitle>
+                <DialogTitle>Xác nhận thay đổi</DialogTitle>
                 <DialogContent>Bạn có chắc muốn thay đổi trạng thái tài khoản?</DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenConfirm(false)}>Hủy</Button>
                     <Button onClick={handleConfirm} autoFocus>
-                        Đồng ý
+                        Xác nhận
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -82,17 +76,24 @@ const StatusDropdown = () => {
     );
 };
 
+// Hiển thị trạng thái request
+const RequestStatus = () => {
+    const record = useRecordContext();
+    return <span>{record?.request ? '✅ Đã yêu cầu' : '—'}</span>;
+};
+
+// Danh sách người dùng
 const UserList = () => (
-    <List>
-        <Datagrid>
+    <List sort={{ field: 'request', order: 'ASC' }}>
+        <Datagrid rowClick="none">
             <TextField source="id" label="ID" />
             <TextField source="fullName" label="Họ và tên" />
             <EmailField source="email" label="Email" />
             <TextField source="createdAt" label="Ngày tạo" />
             <TextField source="updatedAt" label="Ngày cập nhật" />
             <TextField source="deleteAt" label="Ngày xóa" />
-
-            <StatusDropdown /> {/* Cột trạng thái gộp cả request + active */}
+            <ActiveStatusDropdown />
+            <RequestStatus />
         </Datagrid>
     </List>
 );

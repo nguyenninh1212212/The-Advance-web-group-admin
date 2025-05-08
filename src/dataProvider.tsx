@@ -24,10 +24,10 @@ const dataProvider: DataProvider = {
         return httpClient(url).then(({ json }) => {
             if (json.code === 1000 && json.result) {
                 return {
-                    data: json.result.data.map((item: any, index: number) => ({
-                        id: index + 1,
+                    data: json.result.data.map((item: any) => ({
+                        id: item.id +1,
                         ...item,
-                    })),
+                    })),                 
                     total: json.result.total,
                 };
             } else {

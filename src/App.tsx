@@ -11,6 +11,7 @@ import { Login } from "./pages/auth/Login";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import CategoriesList from "./pages/category/category";
+import StoryList from "./pages/Story/storylist";
 
 export const App = () => {
 
@@ -38,7 +39,10 @@ export const App = () => {
                   icon={Category} 
                   //show={ShowGuesser}
                 />
-                <Resource name="comments" list={PostList} icon={Comment} />
+                <Resource 
+                  name="story" 
+                  list={StoryList} 
+                  icon={Comment} />
               </Admin>
             )
           }
