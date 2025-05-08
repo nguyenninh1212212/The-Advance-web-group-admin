@@ -42,7 +42,7 @@ const ActiveStatusDropdown = () => {
                 await api.put(`/admin/user/${record.id}/deactivate`);
                 notify('Đã khóa tài khoản');
             } else {
-                await api.put(`/admin/user/${record.id}/activate`);
+                await api.put(`/admin/user/${record.id}/deactivate`);
                 notify('Đã kích hoạt tài khoản');
             }
             setValue(pendingValue);

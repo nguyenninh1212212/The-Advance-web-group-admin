@@ -31,15 +31,14 @@ import { api } from '../api';
 // Author filter component that uses Autocomplete
 const AuthorFilter = () => {
     const { filterValues, setFilters } = useListContext();
-    const [authors, setAuthors] = useState<{id: string, email: string}[]>([]);
+    const [authors, setAuthors] = useState<{ id: string, email: string }[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedAuthor, setSelectedAuthor] = useState<string | null>(null);
-    
+
     useEffect(() => {
         const fetchAuthors = async () => {
             try {
                 setLoading(true);
-                // API call to get unique authors
                 const response = await api.get('/admin/authors');
                 setAuthors(response.data);
             } catch (error) {
@@ -48,21 +47,20 @@ const AuthorFilter = () => {
                 setLoading(false);
             }
         };
-        
+
         fetchAuthors();
     }, []);
-    
+
     const handleAuthorChange = (event: any, newValue: string | null) => {
         setSelectedAuthor(newValue);
         if (newValue) {
             setFilters({ ...filterValues, email: newValue }, {});
         } else {
-            // Clear the filter if nothing is selected
             const { email, ...restFilters } = filterValues;
             setFilters(restFilters, {});
         }
     };
-    
+
     return (
         <Autocomplete
             sx={{ minWidth: 200 }}
@@ -99,43 +97,44 @@ const AuthorFilter = () => {
 // Category filter component that uses Autocomplete
 const CategoryFilter = () => {
     const { filterValues, setFilters } = useListContext();
-    const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
+    const [category, setCategory] = useState<{ id: string, name: string }[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-    
+
     useEffect(() => {
         const fetchCategories = async () => {
             try {
                 setLoading(true);
-                // API call to get categories
-                const response = await api.get('/admin/categories');
-                setCategories(response.data);
+                const response = await api.get('/admin/category');
+                const categories = (response.data?.result?.data ?? []).sort((a: any, b: any) =>
+                    a.name.localeCompare(b.name)
+                );
+                setCategory(categories);
             } catch (error) {
                 console.error('Error fetching categories:', error);
             } finally {
                 setLoading(false);
             }
         };
-        
+
         fetchCategories();
     }, []);
-    
+
     const handleCategoryChange = (event: any, newValue: string | null) => {
         setSelectedCategory(newValue);
         if (newValue) {
             setFilters({ ...filterValues, 'categories.name': newValue }, {});
         } else {
-            // Clear the filter if nothing is selected
             const { ['categories.name']: categoryName, ...restFilters } = filterValues;
             setFilters(restFilters, {});
         }
     };
-    
+
     return (
         <Autocomplete
             sx={{ minWidth: 200 }}
             size="small"
-            options={categories.map(category => category.name)}
+            options={category.map(categori => categori.name)}
             loading={loading}
             value={selectedCategory}
             onChange={handleCategoryChange}
@@ -172,11 +171,10 @@ const KeywordSearch = () => {
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
         setSearchValue(value);
-        
+
         if (value) {
             setFilters({ ...filterValues, q: value }, {});
         } else {
-            // Clear the filter if search is empty
             const { q, ...restFilters } = filterValues;
             setFilters(restFilters, {});
         }
@@ -201,23 +199,23 @@ const KeywordSearch = () => {
 export const StoryFilterToolbar = () => {
     const [showRejected, setShowRejected] = useState(false);
     const { setFilters, filterValues } = useListContext();
-    
+
     const handleToggleRejected = (event: React.ChangeEvent<HTMLInputElement>) => {
         setShowRejected(event.target.checked);
-        
+
         if (event.target.checked) {
             setFilters({ ...filterValues, isAvailable: undefined }, { isAvailable: undefined });
         } else {
             setFilters({ ...filterValues, isAvailable: ['PENDING', 'ACCEPTED'] }, { isAvailable: ['PENDING', 'ACCEPTED'] });
         }
     };
-    
+
     useEffect(() => {
         if (!showRejected) {
             setFilters({ isAvailable: ['PENDING', 'ACCEPTED'] }, { isAvailable: ['PENDING', 'ACCEPTED'] });
         }
     }, [setFilters, showRejected]);
-    
+
     return (
         <Paper sx={{ p: 2, mb: 2 }}>
             <Grid container spacing={2} alignItems="center">
@@ -234,7 +232,7 @@ export const StoryFilterToolbar = () => {
                     <Tooltip title="Show rejected stories">
                         <FormControlLabel
                             control={
-                                <Switch 
+                                <Switch
                                     checked={showRejected}
                                     onChange={handleToggleRejected}
                                     color="primary"

@@ -25,11 +25,90 @@ import {
     Button,
     SelectChangeEvent,
     Box,
+    Typography,
+    Switch,
+    FormControlLabel,
 } from '@mui/material';
 import { useState } from 'react';
+import { useEffect } from 'react';
 import { api } from '../../api';
 import CustomInteractivePagination from '../../Component/CustomPagination';
 import { StoryFilterToolbar } from '../../Component/SearchComponent'; // Import the horizontal filter toolbar
+
+const BanStoryToggle = () => {
+    const record = useRecordContext();
+    const [banned, setBanned] = useState(false);
+    const [openConfirm, setOpenConfirm] = useState(false);
+    const [pendingValue, setPendingValue] = useState(false);
+    const notify = useNotify();
+    const refresh = useRefresh();
+
+    useEffect(() => {
+        if (record?.banned !== undefined) {
+            setBanned(record.banned);
+            setPendingValue(record.banned);
+        }
+    }, [record]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setPendingValue(e.target.checked);
+        setOpenConfirm(true);
+    };
+
+    const handleConfirm = async () => {
+        if (!record) return;
+        try {
+            await api.put(`/admin/story/${record.id}/ban-status?isBan=${pendingValue}`);
+            notify(pendingValue ? 'Truyện đã bị ban thành công' : 'Truyện đã được bỏ ban thành công');
+            setBanned(pendingValue);
+            refresh();
+        } catch (err) {
+            console.error('Ban status update error:', err);
+            notify(`Lỗi: ${err instanceof Error ? err.message : 'Unknown error'}`, { type: 'error' });
+        } finally {
+            setOpenConfirm(false);
+        }
+    };
+
+    return (
+        <>
+            <FormControlLabel
+                control={
+                    <Switch 
+                        checked={banned}
+                        onChange={handleChange}
+                        onClick={(e) => e.stopPropagation()}
+                        color="error"
+                    />
+                }
+                label=""
+            />
+            <Dialog 
+                open={openConfirm} 
+                onClose={() => setOpenConfirm(false)}
+            >
+                <DialogTitle>Xác nhận {pendingValue ? 'ban' : 'unban'} truyện</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body1" gutterBottom>
+                        Bạn có chắc muốn {pendingValue ? 'ban' : 'unban'} truyện này?
+                    </Typography>
+                    {pendingValue && (
+                        <Typography variant="body2" color="error">
+                            Lưu ý: Truyện bị ban sẽ không hiển thị cho người dùng.
+                        </Typography>
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenConfirm(false)}>Hủy</Button>
+                    <Button onClick={handleConfirm} color="primary" variant="contained" autoFocus>
+                        Xác nhận
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </>
+    );
+};
+
 
 // Dropdown to manage moderation status
 const VisibilityStatusDropdown = () => {
@@ -50,7 +129,7 @@ const VisibilityStatusDropdown = () => {
         try {
             await api.post('/admin/story/moderated', {
                 story_id: record.id,
-                isBanned: pendingValue === 'REJECTED',
+                isBanned: record.banned || false,
                 isAvailable: pendingValue,
             });
             notify('Cập nhật trạng thái thành công');
@@ -102,9 +181,6 @@ const VisibilityStatusDropdown = () => {
     );
 };
 
-// Missing import reference
-import { Typography } from '@mui/material';
-
 // Empty toolbar to remove the default search field
 const EmptyToolbar = () => <TopToolbar />;
 
@@ -127,7 +203,7 @@ const StoryList = (props: any) => (
             <TextField source="type" label="Type" />
             <TextField source="email" label="Author Email" />
             <NumberField source="view" label="Views" />
-            <BooleanField source="isVisibility" label="Visible to Users" />
+            <BooleanField source="visibility" label="Visible to Users" />
             <TextField source="status" label="Status" />
             <NumberField source="price" label="Price" options={{ style: 'currency', currency: 'VND' }} />
             <TextField source="updatedAt" label="Updated At" />
@@ -137,6 +213,7 @@ const StoryList = (props: any) => (
                 </SingleFieldList>
             </ArrayField>
             <VisibilityStatusDropdown />
+            <BanStoryToggle />
         </Datagrid>
     </List>
 );
