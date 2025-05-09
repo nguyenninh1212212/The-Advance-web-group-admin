@@ -6,7 +6,8 @@ import {
     useNotify,
     useRefresh,
     useRecordContext,
-    BooleanField,
+    TextInput,
+    FilterForm,
 } from 'react-admin';
 import {
     Select,
@@ -29,12 +30,12 @@ const ActiveStatusDropdown = () => {
     const [pendingValue, setPendingValue] = useState(value);
     const notify = useNotify();
     const refresh = useRefresh();
-
+    
     const handleChange = (e: any) => {
         setPendingValue(e.target.value);
         setOpenConfirm(true);
     };
-
+    
     const handleConfirm = async () => {
         if (!record) return;
         try {
@@ -53,7 +54,7 @@ const ActiveStatusDropdown = () => {
             setOpenConfirm(false);
         }
     };
-
+    
     return (
         <>
             <FormControl fullWidth size="small">
@@ -82,9 +83,18 @@ const RequestStatus = () => {
     return <span>{record?.request ? '✅ Đã yêu cầu' : '—'}</span>;
 };
 
+// Bộ lọc tìm kiếm
+const userFilters = [
+    <TextInput source="fullName" label="Tìm theo tên" alwaysOn />
+];
+
 // Danh sách người dùng
 const UserList = () => (
-    <List sort={{ field: 'request', order: 'ASC' }}>
+    <List 
+        sort={{ field: 'request', order: 'ASC' }}
+        filters={userFilters}
+        filterDefaultValues={{ fullName: '' }}
+    >
         <Datagrid rowClick="none">
             <TextField source="id" label="ID" />
             <TextField source="fullName" label="Họ và tên" />

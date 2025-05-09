@@ -15,6 +15,7 @@ import CategoryForm from './categorycreate';
 import { api } from '../../api';
 import DeletePopupButton from './categorydelete';
 import CustomPagination from '../../Component/CustomPagination';
+import CategoryFilterToolbar from '../../Component/CategoryFilterToolbar';
 
 const ListActions = ({ onOpen }: { onOpen: () => void }) => (
     <TopToolbar>
@@ -82,7 +83,12 @@ const CategoriesList = (props: any) => {
 
     return (
         <>
-            <List {...props} pagination={<CustomPagination />} actions={<ListActions onOpen={handleOpenCreate} />}>
+            <List
+                {...props}
+                filters={<CategoryFilterToolbar />}
+                pagination={<CustomPagination />}
+                actions={<ListActions onOpen={handleOpenCreate} />}
+            >
                 <Datagrid
                     sx={{
                         '& .RaDatagrid-headerCell': {

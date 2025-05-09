@@ -20,6 +20,26 @@ const dataProvider: DataProvider = {
             page: page - 1,
             limit: perPage,
         };
+        const { q, ...otherFilters } = params.filter ?? {};
+        if (resource === "categories") {
+        // Sử dụng API tìm kiếm riêng nếu có `q`
+        const url = q
+            ? `${apiUrl}/category/search?q=${encodeURIComponent(q)}`
+            : `${apiUrl}/category/search`;
+
+        return httpClient(url).then(({ json }) => {
+            if (json.code === 1000 && json.result) {
+                const allResults = json.result;
+                const paginated = allResults.slice((page - 1) * perPage, page * perPage);
+                return {
+                    data: paginated.map((item: any) => ({ id: item.id, ...item })),
+                    total: allResults.length,
+                };
+            } else {
+                throw new Error("API trả về dữ liệu không hợp lệ.");
+            }
+        });
+    }
         const url = `${apiUrl}/${resource}?${fetchUtils.queryParameters(query)}`;
         return httpClient(url).then(({ json }) => {
             if (json.code === 1000 && json.result) {
