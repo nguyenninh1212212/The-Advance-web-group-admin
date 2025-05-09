@@ -1,6 +1,6 @@
 import { Admin, Resource, ShowGuesser } from "react-admin";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Category, Comment, People, PostAdd } from "@mui/icons-material";
+import { Category, Comment, People, PostAdd, Wallet } from "@mui/icons-material";
 import Layout from "./Layout";
 import dataProvider from "./dataProvider";
 import UserList from "./pages/users/user";
@@ -12,6 +12,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import CategoriesList from "./pages/category/category";
 import StoryList from "./pages/Story/storylist";
+import WalletTransactionList from "./pages/wallet/wallettransactionlist";
 
 export const App = () => {
 
@@ -43,6 +44,10 @@ export const App = () => {
                   name="story" 
                   list={StoryList} 
                   icon={Comment} />
+                <Resource 
+                  name="wallet" 
+                  list={WalletTransactionList} 
+                  icon={Wallet} />
               </Admin>
             )
           }
