@@ -212,8 +212,8 @@ const StoryList = (props: any) => (
                     <ChipField source="name" />
                 </SingleFieldList>
             </ArrayField>
-            <VisibilityStatusDropdown />
-            <BanStoryToggle />
+            <VisibilityStatusDropdown label="Visibility Status"/>
+            <BanStoryToggle label="Ban"/>
         </Datagrid>
     </List>
 );
