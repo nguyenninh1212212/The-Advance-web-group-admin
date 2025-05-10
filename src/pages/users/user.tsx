@@ -7,7 +7,6 @@ import {
     useRefresh,
     useRecordContext,
     TextInput,
-    FilterForm,
 } from 'react-admin';
 import {
     Select,
