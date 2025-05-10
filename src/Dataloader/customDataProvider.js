@@ -3,13 +3,15 @@ import { fetchUtils } from 'react-admin';
 // Cấu hình HTTP client để xử lý các yêu cầu API
 const httpClient = fetchUtils.fetchJson;
 
+const BASE_URL = import.meta.env.VITE_API_URL; // Lấy URL API từ biến môi trường
+
 const customDataProvider = {
     getList: async (resource, params) => {
         const { page, perPage } = params.pagination; // Lấy thông tin phân trang
         const { field, order } = params.sort; // Lấy thông tin sắp xếp
 
         // URL API
-        const url = `http://localhost:8080/${resource}?page=${page - 1}&limit=${perPage}&sort=${field}&order=${order}`;
+        const url = `${BASE_URL}/${resource}?page=${page - 1}&limit=${perPage}&sort=${field}&order=${order}`;
 
         const { json } = await httpClient(url); // Gửi yêu cầu HTTP
         return {
@@ -20,14 +22,14 @@ const customDataProvider = {
 
     // Thêm các phương thức khác như getOne, create, update, delete
     getOne: async (resource, params) => {
-        const url = `http://localhost:8080/${resource}/${params.id}`;
+        const url = `${BASE_URL}/${resource}/${params.id}`;
         const { json } = await httpClient(url);
         return { data: json };
     },
 
     // Xử lý phương thức thêm mới
     create: async (resource, params) => {
-        const url = `http://localhost:8080/${resource}`;
+        const url = `${BASE_URL}/${resource}`;
         const { json } = await httpClient(url, {
             method: 'POST',
             body: JSON.stringify(params.data),
@@ -37,7 +39,7 @@ const customDataProvider = {
 
     // Xử lý phương thức cập nhật
     update: async (resource, params) => {
-        const url = `http://localhost:8080/${resource}/${params.id}`;
+        const url = `${BASE_URL}/${resource}/${params.id}`;
         const { json } = await httpClient(url, {
             method: 'PUT',
             body: JSON.stringify(params.data),
@@ -47,7 +49,7 @@ const customDataProvider = {
 
     // Xử lý phương thức xóa
     delete: async (resource, params) => {
-        const url = `http://localhost:8080/${resource}/${params.id}`;
+        const url = `${BASE_URL}/${resource}/${params.id}`;
         const { json } = await httpClient(url, { method: 'DELETE' });
         return { data: json };
     },

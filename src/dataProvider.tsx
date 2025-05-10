@@ -1,7 +1,8 @@
 import { fetchUtils } from "ra-core";
 import { DataProvider, GetListParams, GetOneParams, UpdateParams } from "ra-core";
 
-const apiUrl = "http://localhost:8080/admin";
+const BASE_URL = process.env.VITE_API_URL;
+const apiUrl = `${BASE_URL}/admin`;
 const httpClient = (url: string, options: any = {}) => {
     const token = localStorage.getItem("accessToken");
     if (!options.headers) {
