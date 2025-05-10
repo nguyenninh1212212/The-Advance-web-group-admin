@@ -102,8 +102,8 @@ const UserList = () => (
             <TextField source="createdAt" label="Ngày tạo" />
             <TextField source="updatedAt" label="Ngày cập nhật" />
             <TextField source="deleteAt" label="Ngày xóa" />
-            <ActiveStatusDropdown />
-            <RequestStatus />
+            <ActiveStatusDropdown label="Trạng thái"/>
+            <RequestStatus label="Yêu cầu lên Author"/>
         </Datagrid>
     </List>
 );

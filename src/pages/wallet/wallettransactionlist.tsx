@@ -35,6 +35,7 @@ const WalletTransactionList = (props: any) => {
                     },
                 }}
             >
+                <TextField source="id" label="ID" />
                 <TextField source="fullName" label="Full Name" />
                 <TextField source="email" label="Email" />
                 <TextField source="transactionType" label="Type" />
